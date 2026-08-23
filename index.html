@@ -1138,7 +1138,6 @@
     const saveDateBtn = document.getElementById('saveDateBtn');
     if (saveDateBtn) {
       saveDateBtn.addEventListener('click', () => {
-        // Check the device type
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
         // If it's an Android device, open Google Calendar link
@@ -1147,9 +1146,9 @@
           window.open(googleCalUrl, '_blank');
           showToast('Opening Google Calendar...');
         }
-        // If it's an iPhone/iPad or Desktop, download the .ics file
+        // If it's an iPhone/iPad or Desktop, use a data URI format that triggers iOS Calendar directly
         else {
-          const ics = [
+          const icsContent = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
             'PRODID:-//Suthan & Sree Deivy Nair Wedding//EN',
@@ -1164,16 +1163,17 @@
             'END:VEVENT',
             'END:VCALENDAR'
           ].join('\r\n');
-          const blob = new Blob([ics], { type: 'text/calendar' });
-          const url = URL.createObjectURL(blob);
+
+          // Using dataURI forces iOS Safari to parse it as an event invitation file
+          const encodedUri = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
           const a = document.createElement('a');
-          a.href = url;
-          a.download = 'suthan-sreedeivy-wedding.ics';
+          a.href = encodedUri;
+          a.setAttribute('download', 'wedding-invite.ics');
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          showToast('Added to your calendar ✓');
+
+          showToast('Opening Calendar invitation ✓');
         }
       });
     }
