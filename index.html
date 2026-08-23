@@ -947,27 +947,24 @@
 
   <p class="invite-toline">To The Wedding Of</p>
 
-  <p class="invite-couple">Suthan<br><span style="font-style:italic;color:var(--gold);font-size:0.7em;">&amp;</span><br>Sree Deivy Nair</p>
+  <!-- margin-bottom: 0.5rem removes the large gap under the names -->
+    <p class="invite-couple" style="margin-bottom: 0.5rem;">Suthan<br><span style="font-style:italic;color:var(--gold);font-size:0.7em;">&amp;</span><br>Sree Deivy Nair</p>
 
-  <p class="invite-toline">ON</p>
+    <p class="invite-toline" style="margin-bottom: 0.5rem;">ON</p>
 
-  <div class="invite-details">
-      <p><strong>October 25th, 2026</strong></p>
-          <p>Rasah Sri Maha Mariamman Temple, Trust<br>178, Jalan Mangga 4, Bukit Rasah, 70300 Seremban, Negeri Sembilan</p>
+    <div class="invite-details">
+        <p><strong>October 25th, 2026</strong></p>
+        <p>Rasah Sri Maha Mariamman Temple, Trust<br>178, Jalan Mangga 4, Bukit Rasah, 70300 Seremban, Negeri Sembilan</p>
+        <p class="invite-toline" style="margin-bottom: 0; margin-top: 0.5rem;">Ceremony begins at <strong style="color: var(--ink);">08:30 AM</strong></p>
 
-          <!-- margin-bottom: 0 stops this line from pushing the & down -->
-          <p class="invite-toline" style="margin-bottom: 0;">Ceremonies begin at <strong style="color: var(--ink);">08:30 AM</strong></p>
+                <!-- margin-top reduced to 0.5rem, and font-size override removed -->
+                <p class="invite-toline" style="margin-top: 0.5rem; margin-bottom: 0.2rem;">&amp;</p>
 
-          <!-- margin-top: 0.5rem controls exactly how close it sits to the Ceremonies line above it -->
-          <p class="invite-toline" style="margin-top: 0.5rem; margin-bottom: -0.4rem;">&amp;</p>
-
-          <!-- margin-bottom: 0.2rem keeps the date tight against this heading -->
-          <p class="invite-toline" style="margin-bottom: 0.2rem;">To the Reception</p>
-
-          <p><strong>October 31st, 2026</strong></p>
-          <p>Dewan Inderawati<br>19, Jalan Siputeh - Batu Hampar, 32700 Beruas, Perak</p>
-
-  </div>
+                <p class="invite-toline" style="margin-bottom: 0.5rem;">To the Reception</p>
+        <p><strong>October 31st, 2026</strong></p>
+        <p>Dewan Inderawati<br>19, Jalan Siputeh - Batu Hampar, 32700 Beruas, Perak</p>
+        <p class="invite-toline" style="margin-bottom: 0; margin-top: 0.5rem;">Ceremony begins at <strong style="color: var(--ink);">07:35 PM</strong></p>
+    </div>
 </section>
 
 <!-- ═══ MONOGRAM DIVIDER / PRELUDE ═══ -->
@@ -1028,21 +1025,27 @@
 </section>
 
 <!-- ═══ ENQUIRIES ═══ -->
+<!-- ═══ ENQUIRIES ═══ -->
 <section class="enquiries">
   <p class="section-label">Questions?</p>
   <h2 class="section-heading">Reach out to us</h2>
   <div class="enquiries-list">
-    <div class="enquiry-item">
+
+    <!-- Wrapping the whole item in an <a> tag makes the entire box clickable -->
+    <a href="tel:+60164554671" class="enquiry-item" style="text-decoration: none; cursor: pointer;">
       <span class="enquiry-name">Thiagu (Groom's side)</span>
-      <a class="enquiry-phone" href="tel:+60164554671">+60 164554671</a>
-    </div>
-    <div class="enquiry-item">
+      <span class="enquiry-phone">+60 164554671</span>
+    </a>
+
+    <a href="tel:+60146621961" class="enquiry-item" style="text-decoration: none; cursor: pointer;">
       <span class="enquiry-name">Surendran (Bride's side)</span>
-      <a class="enquiry-phone" href="tel:+60146621961">+60 146621961</a>
-    </div>
+      <span class="enquiry-phone">+60 146621961</span>
+    </a>
+
   </div>
 </section>
 
+<!-- ═══ ADD TO CALENDAR ═══ -->
 <!-- ═══ ADD TO CALENDAR ═══ -->
 <section class="rsvp-band">
   <p class="rsvp-label">Mark Your Calendar</p>
@@ -1131,36 +1134,49 @@
   }
 
   /* ── Save the Date → real .ics download ───────────────────*/
-  const saveDateBtn = document.getElementById('saveDateBtn');
-  if (saveDateBtn) {
-    saveDateBtn.addEventListener('click', () => {
-      const ics = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//Suthan & Sree Deivy Nair Wedding//EN',
-        'BEGIN:VEVENT',
-        'UID:' + Date.now() + '@wedding',
-        'DTSTAMP:20261025T000000Z',
-        'DTSTART:20261025T003000Z',
-        'DTEND:20261025T060000Z',
-        "SUMMARY:Suthan & Sree Deivy Nair's Wedding",
-        'DESCRIPTION:Wedding Ceremony at Rasah Sri Maha Mariamman Temple\\, Seremban.',
-        'LOCATION:Rasah Sri Maha Mariamman Temple\\, Seremban\\, Negeri Sembilan',
-        'END:VEVENT',
-        'END:VCALENDAR'
-      ].join('\r\n');
-      const blob = new Blob([ics], { type: 'text/calendar' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'suthan-sreedeivy-wedding.ics';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('Added to your calendar ✓');
-    });
-  }
+  /* ── Save the Date (Auto-detect iOS/Android) ────────────────*/
+    const saveDateBtn = document.getElementById('saveDateBtn');
+    if (saveDateBtn) {
+      saveDateBtn.addEventListener('click', () => {
+        // Check the device type
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+        // If it's an Android device, open Google Calendar link
+        if (/android/i.test(userAgent)) {
+          const googleCalUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Suthan+%26+Sree+Deivy+Nair%27s+Wedding&dates=20261025T003000Z/20261025T060000Z&details=Wedding+Ceremony+at+Rasah+Sri+Maha+Mariamman+Temple%2C+Seremban.&location=Rasah+Sri+Maha+Mariamman+Temple%2C+Seremban%2C+Negeri+Sembilan";
+          window.open(googleCalUrl, '_blank');
+          showToast('Opening Google Calendar...');
+        }
+        // If it's an iPhone/iPad or Desktop, download the .ics file
+        else {
+          const ics = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Suthan & Sree Deivy Nair Wedding//EN',
+            'BEGIN:VEVENT',
+            'UID:' + Date.now() + '@wedding',
+            'DTSTAMP:20261025T000000Z',
+            'DTSTART:20261025T003000Z',
+            'DTEND:20261025T060000Z',
+            "SUMMARY:Suthan & Sree Deivy Nair's Wedding",
+            'DESCRIPTION:Wedding Ceremony at Rasah Sri Maha Mariamman Temple\\, Seremban.',
+            'LOCATION:Rasah Sri Maha Mariamman Temple\\, Seremban\\, Negeri Sembilan',
+            'END:VEVENT',
+            'END:VCALENDAR'
+          ].join('\r\n');
+          const blob = new Blob([ics], { type: 'text/calendar' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'suthan-sreedeivy-wedding.ics';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('Added to your calendar ✓');
+        }
+      });
+    }
 
   /* ── Google Maps Linking ───────────────────────────────── */
   const mapsWeddingBtn = document.getElementById('mapsWeddingBtn');
@@ -1325,6 +1341,9 @@
       window.addEventListener('wheel', () => {
         if(isScrolling) stopAutoScroll();
       }, {passive: true});
+
+
+
 
 </script>
 </body>
