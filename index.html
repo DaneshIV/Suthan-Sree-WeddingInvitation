@@ -1134,19 +1134,29 @@
   }
 
   /* ── Save the Date → real .ics download ───────────────────*/
-  /* ── Save the Date (Auto-detect iOS/Android) ────────────────*/
+  /* ── Save the Date (Auto-detect iOS/Android Native App) ────*/
     const saveDateBtn = document.getElementById('saveDateBtn');
     if (saveDateBtn) {
       saveDateBtn.addEventListener('click', () => {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
-        // If it's an Android device, open Google Calendar link
+        // If it's an Android device, trigger the native Android Calendar intent scheme
         if (/android/i.test(userAgent)) {
-          const googleCalUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Suthan+%26+Sree+Deivy+Nair%27s+Wedding&dates=20261025T003000Z/20261025T060000Z&details=Wedding+Ceremony+at+Rasah+Sri+Maha+Mariamman+Temple%2C+Seremban.&location=Rasah+Sri+Maha+Mariamman+Temple%2C+Seremban%2C+Negeri+Sembilan";
-          window.open(googleCalUrl, '_blank');
-          showToast('Opening Google Calendar...');
+          const title = encodeURIComponent("Suthan & Sree Deivy Nair's Wedding");
+          const location = encodeURIComponent("Rasah Sri Maha Mariamman Temple, Seremban, Negeri Sembilan");
+          const description = encodeURIComponent("Wedding Ceremony at Rasah Sri Maha Mariamman Temple, Seremban.");
+
+          // Milliseconds for Oct 25, 2026, at 08:30 AM MYT (UTC+8) -> 00:30 UTC
+          const beginTime = Date.UTC(2026, 9, 25, 0, 30, 0);
+          const endTime = Date.UTC(2026, 9, 25, 6, 0, 0);
+
+          // Native Android intent URI to open the system calendar app add-event screen
+          const androidIntentUrl = `intent://add#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;S.title=${title};S.eventLocation=${location};S.description=${description};l.beginTime=${beginTime};l.endTime=${endTime};end;`;
+
+          window.location.href = androidIntentUrl;
+          showToast('Opening Calendar app...');
         }
-        // If it's an iPhone/iPad or Desktop, use a data URI format that triggers iOS Calendar directly
+        // If it's an iPhone/iPad or Desktop, trigger the iOS Calendar / .ics file download
         else {
           const icsContent = [
             'BEGIN:VCALENDAR',
@@ -1164,7 +1174,6 @@
             'END:VCALENDAR'
           ].join('\r\n');
 
-          // Using dataURI forces iOS Safari to parse it as an event invitation file
           const encodedUri = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
           const a = document.createElement('a');
           a.href = encodedUri;
