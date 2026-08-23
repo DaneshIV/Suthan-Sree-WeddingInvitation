@@ -1012,15 +1012,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
   </button>
 </div>
-  <!-- Scroll Button -->
-  <button class="ctrl-btn" id="scrollBtn" aria-label="Auto Scroll">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
-  </button>
-</div>
-  <!-- Scroll Button -->
-  <button class="ctrl-btn" id="scrollBtn" aria-label="Auto Scroll">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
-  </button>
 </div>
 
 <script>
@@ -1147,55 +1138,67 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  /* ── Audio & Auto-Scroll Logic ─────────────────────────── */
+  /* ── Audio & Auto-Scroll Logic (Auto-Start Version) ────── */
     const musicBtn = document.getElementById('musicBtn');
     const bgMusic = document.getElementById('bgMusic');
     const musicIconPlay = document.getElementById('musicIconPlay');
     const musicIconPause = document.getElementById('musicIconPause');
+    const scrollBtn = document.getElementById('scrollBtn');
+
     let isMusicPlaying = false;
+    let isScrolling = true; // Auto-scroll is ON by default
+    let scrollInterval;
 
+    // --- MUSIC LOGIC ---
+    function playMusic() {
+      if (!isMusicPlaying && bgMusic) {
+        bgMusic.play().then(() => {
+          isMusicPlaying = true;
+          if (musicBtn) musicBtn.classList.add('active');
+          if (musicIconPlay) musicIconPlay.style.display = 'block';
+          if (musicIconPause) musicIconPause.style.display = 'none';
+        }).catch((err) => {
+          console.log("Browser blocked autoplay. Waiting for user to tap the screen.");
+        });
+      }
+    }
+
+    function pauseMusic() {
+      if (isMusicPlaying && bgMusic) {
+        bgMusic.pause();
+        isMusicPlaying = false;
+        if (musicBtn) musicBtn.classList.remove('active');
+        if (musicIconPlay) musicIconPlay.style.display = 'none';
+        if (musicIconPause) musicIconPause.style.display = 'block';
+      }
+    }
+
+    // Toggle music when button is clicked
     if (musicBtn && bgMusic) {
-      // Start muted state
-      musicIconPlay.style.display = 'none';
-      musicIconPause.style.display = 'block';
-
-      musicBtn.addEventListener('click', () => {
-        if (isMusicPlaying) {
-          bgMusic.pause();
-          musicBtn.classList.remove('active');
-          musicIconPlay.style.display = 'none';
-          musicIconPause.style.display = 'block';
-        } else {
-          bgMusic.play();
-          musicBtn.classList.add('active');
-          musicIconPlay.style.display = 'block';
-          musicIconPause.style.display = 'none';
-        }
-        isMusicPlaying = !isMusicPlaying;
+      musicBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevents the document tap listener from firing
+        if (isMusicPlaying) pauseMusic();
+        else playMusic();
       });
     }
 
-    const scrollBtn = document.getElementById('scrollBtn');
-    let isScrolling = false;
-    let scrollInterval;
+    // THE MAGIC TRICK: Play music the very first time the user taps anywhere on the screen!
+    document.body.addEventListener('click', playMusic, { once: true });
+    document.body.addEventListener('touchstart', playMusic, { once: true });
 
-    if (scrollBtn) {
-      scrollBtn.addEventListener('click', () => {
-        isScrolling = !isScrolling;
-        if (isScrolling) {
-          scrollBtn.classList.add('active');
-          // Smooth auto-scroll (adjust 25 for faster/slower speed)
-          scrollInterval = setInterval(() => {
-             window.scrollBy(0, 1);
-             // Stop automatically if we reach the bottom
-             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2) {
-                 stopAutoScroll();
-             }
-          }, 25);
-        } else {
+    // --- AUTO-SCROLL LOGIC ---
+    function startAutoScroll() {
+      isScrolling = true;
+      if (scrollBtn) scrollBtn.classList.add('active');
+      clearInterval(scrollInterval);
+      // Adjust the "30" below to make it scroll faster (smaller number) or slower (larger number)
+      scrollInterval = setInterval(() => {
+        window.scrollBy(0, 1);
+        // Stop if it hits the bottom of the page
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2) {
           stopAutoScroll();
         }
-      });
+      }, 30);
     }
 
     function stopAutoScroll() {
@@ -1204,11 +1207,28 @@
       clearInterval(scrollInterval);
     }
 
-    // Good UX: Stop auto-scrolling if the user manually scrolls or touches the screen
-    window.addEventListener('touchstart', () => { if(isScrolling) stopAutoScroll(); }, {passive: true});
-    window.addEventListener('wheel', () => { if(isScrolling) stopAutoScroll(); }, {passive: true});
+    // Toggle scroll when button is clicked
+    if (scrollBtn) {
+      scrollBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isScrolling) stopAutoScroll();
+        else startAutoScroll();
+      });
+    }
 
+    // START EVERYTHING ON PAGE LOAD
+    window.addEventListener('load', () => {
+      startAutoScroll();
+      playMusic();
+    });
 
+    // Stop auto-scrolling if the user manually touches the screen or scrolls (better user experience)
+    window.addEventListener('touchstart', (e) => {
+      if(!e.target.closest('.ctrl-btn') && isScrolling) stopAutoScroll();
+    }, {passive: true});
+    window.addEventListener('wheel', () => {
+      if(isScrolling) stopAutoScroll();
+    }, {passive: true});
 
 </script>
 </body>
